@@ -1,0 +1,11 @@
+STRICT MINIMAL PACKAGE
+
+Upload the CONTENTS of this ZIP to GitHub repo root.
+Do not upload node_modules, .next, .vercel, or the ZIP itself.
+
+Expected root:
+- app/
+- package.json
+- README.md
+
+File count should be under 20.

@@ -102,9 +102,6 @@ const TOOLS = [
 
 function q(key,type,label,options=[]){return {key,type,label,options}}
 
-const initialAnswers = {};
-TOOLS.forEach(t => t.questions.forEach(q => initialAnswers[q.key] = ''));
-
 function num(x){ return Number(x || 0); }
 function clamp(x,min=1,max=99){ return Math.max(min, Math.min(max, Math.round(x))); }
 function normalize(raw, min, max){ return clamp(((raw - min) / (max - min)) * 100, 1, 99); }
@@ -116,39 +113,6 @@ function detailSignals(text=''){
   let pos = positive.filter(w => t.includes(w)).length;
   let neg = negative.filter(w => t.includes(w)).length;
   return { pos, neg, wordCount: t.trim() ? t.trim().split(/\s+/).length : 0 };
-}
-
-function confidence(tool, a){
-  const relevant = tool.questions.filter(x => x.type !== 'textarea');
-  const answered = relevant.filter(x => String(a[x.key] || '').trim()).length;
-  const base = Math.round((answered / relevant.length) * 75);
-  const detail = detailSignals(a.details).wordCount >= 12 ? 15 : detailSignals(a.details).wordCount >= 5 ? 8 : 0;
-  return clamp(base + detail + 10, 35, 96);
-}
-
-function contradictionCheck(id, a){
-  const flags = [];
-  if(id === 'ex'){
-    if(a.blockStatus === 'blocked' && a.postBreakupContact === 'often') flags.push('Blocked status conflicts with frequent contact, so confidence is slightly reduced.');
-    if(a.newPartner === 'yes' && num(a.effortFromThem) >= 4) flags.push('New partner signal conflicts with high effort from their side.');
-    if(a.breakupReason === 'cheating' && a.lastContact === 'today') flags.push('Recent contact exists, but trust damage remains a major risk.');
-  }
-  if(id === 'crush'){
-    
-  }
-  if(id === 'crush'){
-    if(a.replyQuality === 'dry' && num(a.flirting) >= 4) flags.push('Dry replies conflict with strong flirting signals.');
-    if(a.whoInitiates === 'you' && a.timeTogether === 'often') flags.push('You initiate more, but time spent together keeps the signal alive.');
-  }
-  if(id === 'toxic'){
-    if(num(a.manipulation) >= 4 && num(a.accountability) >= 4) flags.push('High mind-game tendency conflicts with high accountability.');
-    if(num(a.anger) >= 4 && num(a.communication) >= 4) flags.push('Strong anger and strong communication create a mixed pattern.');
-  }
-  if(id === 'future'){
-    if(num(a.savings) >= 4 && num(a.debt) >= 4) flags.push('Good savings habit exists, but debt pressure weakens the trajectory.');
-    if(num(a.ambition) >= 4 && num(a.discipline) <= 2) flags.push('Ambition is high, but discipline is the bottleneck.');
-  }
-  return flags;
 }
 
 function calculate(tool, a){
