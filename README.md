@@ -1,12 +1,12 @@
-# VibeLeak AI Pro Final
+# VibeLeak AI Advanced Engine
 
-Premium UI/UX rebuild with:
-- One-question-at-a-time flow
-- Separate questionnaires for all 5 tools
-- Weighted scoring logic
-- UPI payment flow
-- SEO landing pages
-- sitemap and robots
-- policy pages
+Upgraded prediction/report engine:
+- Normalized scoring
+- Confidence level
+- Contradiction detection
+- Dimension scores
+- Strongest positive and risk signals
+- Better narrative result
+- Paid report preview tied to tool-specific result
 
-UPI ID: hrj107-3@okhdfcbank
+Still entertainment/self-reflection, not guaranteed real-world prediction.

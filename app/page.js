@@ -80,9 +80,9 @@ const TOOLS = [
     ]
   },
   {
-    id:'future', slug:'future-rich-or-broke', title:'Future Rich or Broke?', emoji:'💸', price:49,
+    id:'future', slug:'future-rich-or-broke', title:'Future Trajectory Score', emoji:'💸', price:49,
     hook:'Analyze what your current habits suggest.',
-    seo:'Future rich or broke calculator based on savings, investing, skill growth, career clarity and spending control.',
+    seo:'Future trajectory calculator based on savings, investing, skill growth, career clarity and spending control.',
     questions:[
       q('name','text','Your name / nickname'),
       q('incomeHabit','scale','Income-building habit'),
@@ -105,75 +105,246 @@ function q(key,type,label,options=[]){return {key,type,label,options}}
 const initialAnswers = {};
 TOOLS.forEach(t => t.questions.forEach(q => initialAnswers[q.key] = ''));
 
-function val(x){return Number(x||0)}
-function clamp(x){return Math.max(1,Math.min(99,Math.round(x)))}
+function num(x){ return Number(x || 0); }
+function clamp(x,min=1,max=99){ return Math.max(min, Math.min(max, Math.round(x))); }
+function normalize(raw, min, max){ return clamp(((raw - min) / (max - min)) * 100, 1, 99); }
 
-function calculate(tool, a){
-  let s = 0, factors = [];
-  if(tool.id==='ex'){
-    s=40;
-    s += add({under3:2,three12:6,over1:10,over3:12}[a.relationshipLength], factors, 'Relationship length');
-    s += add({you:-4,them:6,mutual:10}[a.breakupInitiator], factors, 'Who ended it');
-    s += add({misunderstanding:16,distance:9,family:5,fighting:-7,trust:-14,cheating:-20}[a.breakupReason], factors, 'Breakup reason');
-    s += add({today:18,week:13,month:5,long:-9}[a.lastContact], factors, 'Last contact');
-    s += add({none:12,muted:2,blocked:-18}[a.blockStatus], factors, 'Block status');
-    s += add({often:13,sometimes:6,never:-7}[a.postBreakupContact], factors, 'Post-breakup contact');
-    s += add({no:8,maybe:-3,yes:-18}[a.newPartner], factors, 'New partner signal');
-    s += add(val(a.attachment)*3, factors, 'Your attachment');
-    s += add(val(a.effortFromThem)*4, factors, 'Effort from their side');
-  } else if(tool.id==='crush'){
-    s=38;
-    s += add({daily:16,weekly:9,rare:-4,none:-12}[a.talkFrequency], factors, 'Talk frequency');
-    s += add({they:14,both:10,you:-4}[a.whoInitiates], factors, 'Who initiates');
-    s += add({fast:12,warm:9,late:-5,dry:-8}[a.replyQuality], factors, 'Reply quality');
-    s += add({often:11,sometimes:6,never:-7}[a.timeTogether], factors, 'Time together');
-    s += add(val(a.flirting)*5, factors, 'Flirting signal');
-    s += add(val(a.sharedInterests)*4, factors, 'Shared interests');
-    s += add(val(a.emotionalComfort)*4, factors, 'Emotional comfort');
-    s += add(val(a.respect)*3, factors, 'Respect');
-    s += add({right:8,slow:2,bad:-10}[a.timing], factors, 'Timing');
-  } else if(tool.id==='toxic'){
-    s=18;
-    s += add(val(a.jealousy)*7, factors, 'Jealousy');
-    s += add(val(a.ghosting)*6, factors, 'Ghosting');
-    s += add(val(a.manipulation)*8, factors, 'Mind games');
-    s += add(val(a.anger)*6, factors, 'Anger');
-    s += add(val(a.revenge)*7, factors, 'Revenge tendency');
-    s += add(val(a.possessive)*6, factors, 'Possessiveness');
-    s -= add(val(a.apologizes)*4, factors, 'Apology reduces score');
-    s -= add(val(a.accountability)*5, factors, 'Accountability reduces score');
-    s -= add(val(a.communication)*4, factors, 'Communication reduces score');
-  } else if(tool.id==='rare'){
-    s=35;
-    s += add(val(a.independence)*5, factors, 'Independence');
-    s += add(val(a.riskTaking)*3, factors, 'Risk-taking');
-    s += add(val(a.unusualInterests)*6, factors, 'Unusual interests');
-    s += add(val(a.socialEnergy)*2, factors, 'Social energy');
-    s += add(val(a.travel)*3, factors, 'Travel/exposure');
-    s += add(val(a.ambition)*4, factors, 'Ambition');
-    s += add(val(a.discipline)*3, factors, 'Discipline');
-    s += add(val(a.originality)*6, factors, 'Originality');
-    s += add(val(a.confidence)*3, factors, 'Confidence');
-  } else {
-    s=25;
-    s += add(val(a.incomeHabit)*4, factors, 'Income-building habit');
-    s += add(val(a.savings)*6, factors, 'Savings');
-    s -= add(val(a.debt)*5, factors, 'Debt pressure');
-    s += add(val(a.investing)*6, factors, 'Investing');
-    s += add(val(a.skillGrowth)*6, factors, 'Skill growth');
-    s += add(val(a.careerClarity)*5, factors, 'Career clarity');
-    s += add(val(a.spendingControl)*5, factors, 'Spending control');
-    s += add(val(a.emergencyFund)*4, factors, 'Emergency fund');
-    s += add(val(a.consistency)*5, factors, 'Consistency');
-    s += add(val(a.discipline)*5, factors, 'Discipline');
-  }
-  const score = clamp(s);
-  return {score, label: label(tool.id, score), factors: factors.slice(0,5), locked: premium(tool.id)};
+function detailSignals(text=''){
+  const t = String(text).toLowerCase();
+  const positive = ['sorry','apolog','miss','love','care','respect','talk','meet','effort','changed','improve','trust','calm','support','consistent','future','career','save','invest','learn'];
+  const negative = ['block','cheat','abuse','toxic','fight','lie','ignore','ghost','revenge','angry','debt','lazy','confused','addict','controlling','manipulate'];
+  let pos = positive.filter(w => t.includes(w)).length;
+  let neg = negative.filter(w => t.includes(w)).length;
+  return { pos, neg, wordCount: t.trim() ? t.trim().split(/\s+/).length : 0 };
 }
 
-function add(v,factors,name){const x=Number(v||0); if(x!==0) factors.push(`${name}: ${x>0?'+':''}${x}`); return x}
-function label(id,s){const high=s>=75, mid=s>=55; const m={ex:['High comeback signal','Mixed signal, not fully over','Low comeback signal'],crush:['Strong attraction pattern','Potential, but timing matters','Interest looks uncertain'],toxic:['Intense pattern detected','Manageable but noticeable','Mostly stable energy'],rare:['Rare personality mix','Distinct but relatable','Common but charming'],future:['Strong future potential','Can win with discipline','Habits need correction']};return high?m[id][0]:mid?m[id][1]:m[id][2]}
-function premium(id){return {ex:['Whether to text or stay silent','Best message style','What hurts comeback chances','7-day emotional strategy'],crush:['Confession timing','Best opener','Green and red flags','Attraction signal breakdown'],toxic:['Your strongest pattern','What people may feel around you','Brutal roast-style insight','What to fix first'],rare:['Rarity breakdown','Dating rarity','Friend-circle role','Shareable card text'],future:['Money personality','Rich/broke risk factors','Career habit prediction','3 changes to improve future score']}[id]}
+function confidence(tool, a){
+  const relevant = tool.questions.filter(x => x.type !== 'textarea');
+  const answered = relevant.filter(x => String(a[x.key] || '').trim()).length;
+  const base = Math.round((answered / relevant.length) * 75);
+  const detail = detailSignals(a.details).wordCount >= 12 ? 15 : detailSignals(a.details).wordCount >= 5 ? 8 : 0;
+  return clamp(base + detail + 10, 35, 96);
+}
+
+function contradictionCheck(id, a){
+  const flags = [];
+  if(id === 'ex'){
+    if(a.blockStatus === 'blocked' && a.postBreakupContact === 'often') flags.push('Blocked status conflicts with frequent contact, so confidence is slightly reduced.');
+    if(a.newPartner === 'yes' && num(a.effortFromThem) >= 4) flags.push('New partner signal conflicts with high effort from their side.');
+    if(a.breakupReason === 'cheating' && a.lastContact === 'today') flags.push('Recent contact exists, but trust damage remains a major risk.');
+  }
+  if(id === 'crush'){
+    
+  }
+  if(id === 'crush'){
+    if(a.replyQuality === 'dry' && num(a.flirting) >= 4) flags.push('Dry replies conflict with strong flirting signals.');
+    if(a.whoInitiates === 'you' && a.timeTogether === 'often') flags.push('You initiate more, but time spent together keeps the signal alive.');
+  }
+  if(id === 'toxic'){
+    if(num(a.manipulation) >= 4 && num(a.accountability) >= 4) flags.push('High mind-game tendency conflicts with high accountability.');
+    if(num(a.anger) >= 4 && num(a.communication) >= 4) flags.push('Strong anger and strong communication create a mixed pattern.');
+  }
+  if(id === 'future'){
+    if(num(a.savings) >= 4 && num(a.debt) >= 4) flags.push('Good savings habit exists, but debt pressure weakens the trajectory.');
+    if(num(a.ambition) >= 4 && num(a.discipline) <= 2) flags.push('Ambition is high, but discipline is the bottleneck.');
+  }
+  return flags;
+}
+
+function calculate(tool, a){
+  let raw=0, min=0, max=100, positives=[], risks=[], dimensions={}, narrative='';
+  const d = detailSignals(a.details);
+
+  if(tool.id==='ex'){
+    min=-75; max=115; raw=5;
+    const add=(value,label)=>{ raw+=value; if(value>0) positives.push(`${label} adds a positive signal.`); if(value<0) risks.push(`${label} weakens the comeback signal.`); };
+    add({under3:2,three12:7,over1:13,over3:16}[a.relationshipLength]||0,'Relationship length');
+    add({you:-5,them:7,mutual:12}[a.breakupInitiator]||0,'Breakup initiator');
+    add({misunderstanding:20,distance:10,family:6,fighting:-9,trust:-18,cheating:-26}[a.breakupReason]||0,'Breakup reason');
+    add({today:22,week:15,month:5,long:-14}[a.lastContact]||0,'Last contact');
+    add({none:14,muted:2,blocked:-24}[a.blockStatus]||0,'Block status');
+    add({often:16,sometimes:7,never:-10}[a.postBreakupContact]||0,'Post-breakup contact');
+    add({no:10,maybe:-4,yes:-24}[a.newPartner]||0,'New partner signal');
+    add(num(a.attachment)*3,'Your attachment');
+    add(num(a.effortFromThem)*5,'Effort from their side');
+    raw += d.pos*3 - d.neg*4;
+    dimensions = {
+      'Emotional residue': clamp(num(a.attachment)*18 + (a.lastContact==='today'?10:0),0,100),
+      'Access/contact': clamp(({none:75,muted:45,blocked:15}[a.blockStatus]||35) + ({often:18,sometimes:8,never:-8}[a.postBreakupContact]||0),0,100),
+      'Risk level': clamp(100 - (({cheating:85,trust:75,fighting:58,distance:35,misunderstanding:25,family:40}[a.breakupReason]||50) + (a.newPartner==='yes'?25:0)),0,100)
+    };
+    narrative = 'This score weighs emotional residue, real access, breakup damage, recent contact and effort signals. It is strongest when contact is recent, access is open, and breakup damage is repairable.';
+  }
+
+  if(tool.id==='crush'){
+    min=-45; max=130; raw=0;
+    const add=(value,label)=>{ raw+=value; if(value>0) positives.push(`${label} supports attraction.`); if(value<0) risks.push(`${label} weakens attraction.`); };
+    add({daily:20,weekly:10,rare:-6,none:-18}[a.talkFrequency]||0,'Talk frequency');
+    add({they:18,both:12,you:-7}[a.whoInitiates]||0,'Initiation pattern');
+    add({fast:16,warm:11,late:-5,dry:-12}[a.replyQuality]||0,'Reply quality');
+    add({often:14,sometimes:7,never:-10}[a.timeTogether]||0,'Time together');
+    add(num(a.flirting)*6,'Flirting');
+    add(num(a.sharedInterests)*5,'Shared interests');
+    add(num(a.emotionalComfort)*5,'Emotional comfort');
+    add(num(a.respect)*4,'Respect');
+    add({right:10,slow:2,bad:-12}[a.timing]||0,'Timing');
+    raw += d.pos*2 - d.neg*3;
+    dimensions = {
+      'Attraction signal': clamp(num(a.flirting)*18 + ({fast:10,warm:6,dry:-10}[a.replyQuality]||0),0,100),
+      'Mutual effort': clamp(({they:85,both:72,you:35}[a.whoInitiates]||45),0,100),
+      'Comfort base': clamp(num(a.emotionalComfort)*18 + num(a.respect)*10,0,100)
+    };
+    narrative = 'This score weighs mutual effort, communication warmth, comfort, respect and timing. High compatibility requires more than liking someone; it needs response quality and emotional ease.';
+  }
+
+  if(tool.id==='toxic'){
+    min=0; max=210; raw=0;
+    const add=(value,label,type='risk')=>{ raw+=value; if(type==='risk' && value>0) risks.push(`${label} increases intensity.`); if(type==='protect' && value>0) positives.push(`${label} reduces intensity.`); };
+    add(num(a.jealousy)*9,'Jealousy');
+    add(num(a.ghosting)*8,'Ghosting');
+    add(num(a.manipulation)*10,'Mind games');
+    add(num(a.anger)*8,'Anger');
+    add(num(a.revenge)*9,'Revenge tendency');
+    add(num(a.possessive)*8,'Possessiveness');
+    add(-num(a.apologizes)*6,'Apology','protect');
+    add(-num(a.accountability)*7,'Accountability','protect');
+    add(-num(a.communication)*6,'Communication','protect');
+    raw += d.neg*5 - d.pos*3;
+    dimensions = {
+      'Conflict intensity': clamp(num(a.anger)*17 + num(a.revenge)*14,0,100),
+      'Control pattern': clamp(num(a.jealousy)*15 + num(a.possessive)*15 + num(a.manipulation)*12,0,100),
+      'Repair ability': clamp(num(a.apologizes)*18 + num(a.accountability)*18 + num(a.communication)*14,0,100)
+    };
+    narrative = 'This score is not a label. It identifies intensity patterns: jealousy, control, anger and repair ability. High repair ability reduces the practical risk.';
+  }
+
+  if(tool.id==='rare'){
+    min=0; max=210; raw=0;
+    const add=(value,label)=>{ raw+=value; if(value>0) positives.push(`${label} adds distinctiveness.`); };
+    add(num(a.independence)*8,'Independence');
+    add(num(a.riskTaking)*5,'Risk-taking');
+    add(num(a.unusualInterests)*10,'Unusual interests');
+    add(num(a.socialEnergy)*4,'Social energy');
+    add(num(a.travel)*5,'Travel/exposure');
+    add(num(a.ambition)*7,'Ambition');
+    add(num(a.discipline)*5,'Discipline');
+    add(num(a.originality)*10,'Originality');
+    add(num(a.confidence)*6,'Confidence');
+    raw += d.pos*2;
+    dimensions = {
+      'Originality': clamp(num(a.originality)*18 + num(a.unusualInterests)*16,0,100),
+      'Independent identity': clamp(num(a.independence)*18 + num(a.confidence)*10,0,100),
+      'Life exposure': clamp(num(a.travel)*15 + num(a.riskTaking)*10,0,100)
+    };
+    narrative = 'This is a distinctiveness score, not a census claim. It measures how uncommon your combination of independence, originality, ambition and lifestyle signals appears from your answers.';
+  }
+
+  if(tool.id==='future'){
+    min=-30; max=245; raw=0;
+    const add=(value,label,type='positive')=>{ raw+=value; if(type==='positive' && value>0) positives.push(`${label} strengthens trajectory.`); if(type==='risk' && value>0) risks.push(`${label} creates pressure.`); };
+    add(num(a.incomeHabit)*7,'Income-building habit');
+    add(num(a.savings)*10,'Savings habit');
+    add(num(a.debt)*-9,'Debt pressure','risk');
+    add(num(a.investing)*10,'Investing habit');
+    add(num(a.skillGrowth)*10,'Skill growth');
+    add(num(a.careerClarity)*8,'Career clarity');
+    add(num(a.spendingControl)*8,'Spending control');
+    add(num(a.emergencyFund)*7,'Emergency fund');
+    add(num(a.consistency)*9,'Consistency');
+    add(num(a.discipline)*9,'Discipline');
+    raw += d.pos*2 - d.neg*3;
+    dimensions = {
+      'Wealth-building habits': clamp(num(a.savings)*16 + num(a.investing)*16 + num(a.incomeHabit)*10,0,100),
+      'Execution strength': clamp(num(a.discipline)*17 + num(a.consistency)*17 + num(a.skillGrowth)*10,0,100),
+      'Financial pressure': clamp(100 - num(a.debt)*18 + num(a.emergencyFund)*8,0,100)
+    };
+    narrative = 'This is a trajectory score based on habits, not destiny. Strong results come from savings, investing, skill growth, discipline and spending control.';
+  }
+
+  const contradictions = contradictionCheck(tool.id, a);
+  let score = normalize(raw,min,max);
+
+  // confidence reduces extreme claims when data is weak or contradictory
+  const conf = confidence(tool, a);
+  if(conf < 70){ score = Math.round(score*0.85 + 50*0.15); }
+  if(contradictions.length){ score = Math.round(score*0.9 + 50*0.1); }
+
+  const strongestPositive = positives[0] || 'Your answers show at least one constructive signal.';
+  const biggestRisk = risks[0] || 'No strong risk signal dominated the result.';
+
+  return {
+    score: clamp(score),
+    confidence: conf,
+    label: label(tool.id, score),
+    dimensions,
+    factors: [
+      `Strongest positive: ${strongestPositive}`,
+      `Biggest risk: ${biggestRisk}`,
+      `Confidence level: ${conf}% based on answer completeness and detail quality.`,
+      ...contradictions
+    ],
+    contradictions,
+    narrative,
+    locked: premium(tool.id, score, a)
+  };
+}
+
+function confidence(tool, a){
+  const relevant = tool.questions.filter(x => x.type !== 'textarea');
+  const answered = relevant.filter(x => String(a[x.key] || '').trim()).length;
+  const completion = Math.round((answered / relevant.length) * 70);
+  const details = detailSignals(a.details).wordCount;
+  const detailScore = details >= 18 ? 18 : details >= 10 ? 12 : details >= 5 ? 6 : 0;
+  return clamp(completion + detailScore + 10, 35, 96);
+}
+
+function contradictionCheck(id, a){
+  const flags = [];
+  if(id === 'ex'){
+    if(a.blockStatus === 'blocked' && a.postBreakupContact === 'often') flags.push('Mixed signal: blocked status conflicts with frequent contact.');
+    if(a.newPartner === 'yes' && num(a.effortFromThem) >= 4) flags.push('Mixed signal: new partner exists, but effort from their side is still high.');
+    if(a.breakupReason === 'cheating' && a.lastContact === 'today') flags.push('Mixed signal: recent contact exists, but trust damage remains a major risk.');
+  }
+  if(id === 'crush'){
+    if(a.replyQuality === 'dry' && num(a.flirting) >= 4) flags.push('Mixed signal: dry replies conflict with strong flirting signals.');
+    if(a.whoInitiates === 'you' && a.timeTogether === 'often') flags.push('Mixed signal: you initiate more, but time spent together keeps the possibility alive.');
+  }
+  if(id === 'toxic'){
+    if(num(a.manipulation) >= 4 && num(a.accountability) >= 4) flags.push('Mixed pattern: high mind-games but also high accountability.');
+    if(num(a.anger) >= 4 && num(a.communication) >= 4) flags.push('Mixed pattern: anger is high, but communication may reduce damage.');
+  }
+  if(id === 'future'){
+    if(num(a.savings) >= 4 && num(a.debt) >= 4) flags.push('Mixed signal: savings habit is good, but debt pressure is also high.');
+    if(num(a.incomeHabit) >= 4 && num(a.discipline) <= 2) flags.push('Mixed signal: income ambition is present, but discipline may block progress.');
+  }
+  return flags;
+}
+
+function label(id,s){
+  const high=s>=75, mid=s>=55;
+  const m={
+    ex:['High comeback signal','Mixed signal, not fully over','Low comeback signal'],
+    crush:['Strong attraction pattern','Potential, but timing matters','Interest looks uncertain'],
+    toxic:['High intensity pattern','Manageable but noticeable','Mostly stable energy'],
+    rare:['Rare personality mix','Distinct but relatable','Common but charming'],
+    future:['Strong future trajectory','Can win with discipline','Habits need correction']
+  };
+  return high?m[id][0]:mid?m[id][1]:m[id][2];
+}
+
+function premium(id, score, a){
+  const data = {
+    ex:['A personalized contact/no-contact recommendation','Best message style based on breakup reason','What may make them pull away again','7-day emotional strategy'],
+    crush:['Whether to confess now or wait','Best opener based on reply pattern','Green flags and red flags breakdown','How to increase attraction without looking desperate'],
+    toxic:['Your strongest intensity pattern','What people may feel around you','Your repairability score','One habit to fix first'],
+    rare:['Your distinctiveness breakdown','Dating rarity interpretation','Friend-circle role','Shareable result card text'],
+    future:['Money personality profile','Biggest wealth blocker','Best next 30-day habit','Trajectory improvement plan']
+  };
+  return data[id];
+}
+
+const initialAnswers = {};
+TOOLS.forEach(t => t.questions.forEach(q => initialAnswers[q.key] = ''));
 
 export default function Home(){
   const [tool,setTool]=useState(TOOLS[0]); const [answers,setAnswers]=useState(initialAnswers); const [step,setStep]=useState(0); const [result,setResult]=useState(null); const [showPay,setShowPay]=useState(false); const [utr,setUtr]=useState('');
@@ -186,14 +357,14 @@ export default function Home(){
   async function copyUPI(){await navigator.clipboard.writeText(UPI_ID); alert('UPI copied')}
   return <main className="wrap">
     <nav className="nav"><div className="brand">VibeLeak <span>AI</span></div><div className="navlinks"><a href="#tests">Tests</a><a href="#faq">FAQ</a><a className="btn secondary" href="#quiz">Start</a></div></nav>
-    <section className="hero"><div><span className="pill">Your answers reveal more than you think ✨</span><h1>Love, personality and future score tests that feel personal.</h1><p className="muted">Choose a test, answer focused questions, get a calculated score, and unlock deeper insights with UPI.</p><div className="actions"><a href="#tests" className="btn">Explore Tests</a><a href="#quiz" className="btn secondary">Start Now</a></div></div><div className="card hero-card"><h2>Not one generic form.</h2><p className="muted">Every tool uses its own questions and scoring logic.</p><div className="metric-row"><div className="mini"><strong>5</strong><span>Tests</span></div><div className="mini"><strong>₹29+</strong><span>Unlocks</span></div><div className="mini"><strong>UPI</strong><span>Fast pay</span></div></div></div></section>
+    <section className="hero"><div><span className="pill">Your answers reveal more than you think ✨</span><h1>Love, personality and future score tests that feel personal.</h1><p className="muted">Choose a test, answer focused questions, get a calculated score, and unlock deeper insights with UPI.</p><div className="actions"><a href="#tests" className="btn">Explore Tests</a><a href="#quiz" className="btn secondary">Start Now</a></div></div><div className="card hero-card"><h2>Built to feel specific.</h2><p className="muted">The new engine uses normalized scoring, confidence level, contradiction detection and factor-based explanations.</p><div className="metric-row"><div className="mini"><strong>5</strong><span>Tests</span></div><div className="mini"><strong>₹29+</strong><span>Unlocks</span></div><div className="mini"><strong>UPI</strong><span>Fast pay</span></div></div></div></section>
     <section className="section" id="tests"><span className="pill">Choose your test</span><h2>What do you want to discover?</h2><div className="tools">{TOOLS.map(t=><div key={t.id} className={'tool '+(tool.id===t.id?'active':'')} onClick={()=>chooseTool(t)}><div className="emoji">{t.emoji}</div><h3>{t.title}</h3><p className="small">{t.hook}</p><div className="price">₹{t.price}</div></div>)}</div></section>
     <section className="section quiz-shell" id="quiz">
       <div className="card"><span className="pill">{tool.emoji} {tool.title}</span><h2>{tool.hook}</h2><p className="muted">{tool.seo}</p><div className="progress"><div className="bar" style={{width:`${progress}%`}}/></div><p className="small">Question {step+1} of {tool.questions.length}</p><Question q={current} value={answers[current.key]} onChange={v=>update(current.key,v)}/><div className="actions"><button className="btn secondary" onClick={back}>Back</button><button className="btn" onClick={next}>{step===tool.questions.length-1?'Reveal My Score':'Next'}</button></div></div>
-      <div className="card">{!result?<><h2>Your result will appear here.</h2><p className="muted">Answer the focused questions to calculate your score.</p></>:<><div className="result-score">{result.score}%</div><h2>{result.label}</h2><p className="muted">Calculated from your selected answers for {tool.title}.</p><h3>What shaped your result?</h3>{result.factors.map((f,i)=><div className="factor" key={i}>{f}</div>)}<div className="share-card">{tool.emoji} I scored {result.score}% on {tool.title}. Can you beat this?</div><h3>Your score is only the surface</h3><div className="locked"><ul>{result.locked.map((x,i)=><li key={i}>{x}</li>)}</ul></div><div className="paybox"><h3>Reveal what your score isn’t telling you — ₹{tool.price}</h3><p className="small">Mobile: UPI app may open. Desktop: copy UPI ID.</p><div className="upi">UPI: {UPI_ID}</div><div className="actions"><a href={upiLink} className="btn">Unlock with UPI</a><button className="btn secondary" onClick={copyUPI}>Copy UPI</button><button className="btn secondary" onClick={()=>setShowPay(!showPay)}>Verify Payment</button></div>{showPay&&<div className="actions"><input placeholder="Enter UTR / Transaction ID" value={utr} onChange={e=>setUtr(e.target.value)}/><button className="btn secondary" onClick={()=>alert('Payment reference received. Verify manually.')}>Submit</button></div>}<div className="qr">QR placeholder<br/>Copy UPI active</div></div></>}</div>
+      <div className="card">{!result?<><h2>Your result will appear here.</h2><p className="muted">Answer the focused questions to calculate your score.</p></>:<><div className="result-score">{result.score}%</div><h2>{result.label}</h2><p className="muted">{result.narrative}</p><div className="metric-row"><div className="mini"><strong>{result.confidence}%</strong><span>Confidence</span></div>{Object.entries(result.dimensions).slice(0,2).map(([k,v])=><div className="mini" key={k}><strong>{v}%</strong><span>{k}</span></div>)}</div><h3>What shaped your result?</h3>{result.factors.map((f,i)=><div className="factor" key={i}>{f}</div>)}<div className="share-card">{tool.emoji} I scored {result.score}% on {tool.title}. Can you beat this?</div><h3>Your score is only the surface</h3><div className="locked"><ul>{result.locked.map((x,i)=><li key={i}>{x}</li>)}</ul></div><div className="paybox"><h3>Reveal what your score isn’t telling you — ₹{tool.price}</h3><p className="small">Mobile: UPI app may open. Desktop: copy UPI ID.</p><div className="upi">UPI: {UPI_ID}</div><div className="actions"><a href={upiLink} className="btn">Unlock with UPI</a><button className="btn secondary" onClick={copyUPI}>Copy UPI</button><button className="btn secondary" onClick={()=>setShowPay(!showPay)}>Verify Payment</button></div>{showPay&&<div className="actions"><input placeholder="Enter UTR / Transaction ID" value={utr} onChange={e=>setUtr(e.target.value)}/><button className="btn secondary" onClick={()=>alert('Payment reference received. Verify manually.')}>Submit</button></div>}<div className="qr">QR placeholder<br/>Copy UPI active</div></div></>}</div>
     </section>
-    <section className="section grid3"><Info title="Separate Questionnaires" text="Each test asks different questions, so the experience feels more personal."/><Info title="Calculated Scoring" text="Scores come from weighted answer factors, not pure random numbers."/><Info title="Shareable Results" text="Free score cards create curiosity and help organic sharing."/></section>
-    <section className="section" id="faq"><span className="pill">FAQ</span><h2>Questions people ask</h2><div className="faq"><details><summary>Is this real prediction?</summary><p className="muted">It is an entertainment and self-reflection tool. Scores are calculated from your answers but are not guaranteed predictions.</p></details><details><summary>How do payments work?</summary><p className="muted">India launch uses UPI manual payment. Later you can connect gateway payments.</p></details><details><summary>Why pay?</summary><p className="muted">Free result shows the score. Paid unlock reveals deeper factors, message ideas, and personalized next steps.</p></details></div></section>
+    <section className="section grid3"><Info title="Normalized Scoring" text="Raw answer points are converted into a calibrated 1–99 score to avoid fake inflated results."/><Info title="Contradiction Detection" text="Mixed signals are detected and shown in the result explanation."/><Info title="Confidence Level" text="The engine rates how reliable the result is based on answer completeness and detail quality."/></section>
+    <section className="section" id="faq"><span className="pill">FAQ</span><h2>Questions people ask</h2><div className="faq"><details><summary>Is this real prediction?</summary><p className="muted">It is an entertainment and self-reflection tool. Scores are calculated from your answers with rule-based logic, confidence and contradiction checks, but are not guaranteed predictions.</p></details><details><summary>Why does it feel personal?</summary><p className="muted">Because each test uses different questions, weighted factors, dimensions, mixed-signal checks and answer-detail signals.</p></details><details><summary>Why pay?</summary><p className="muted">Free result shows the score and main factors. Paid unlock reveals deeper analysis, message ideas, and personalized next steps.</p></details></div></section>
     <footer className="footer"><span>© VibeLeak AI</span><a href="/terms">Terms</a><a href="/privacy">Privacy</a><a href="/refunds">Refunds</a></footer>
   </main>
 }
