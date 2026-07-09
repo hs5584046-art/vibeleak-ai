@@ -1,0 +1,3 @@
+import { NextResponse } from 'next/server';
+import { getSupabaseAdmin } from '../../../../lib/supabaseAdmin';
+export async function POST(req){try{const{pin,id,status}=await req.json();if(pin!==process.env.ADMIN_PIN)return NextResponse.json({error:'Unauthorized'},{status:401});if(!id)return NextResponse.json({error:'Missing id'},{status:400});const supabase=getSupabaseAdmin();const update={status:status||'approved'};if(update.status==='approved')update.approved_at=new Date().toISOString();const{error}=await supabase.from('payment_requests').update(update).eq('id',id);if(error)return NextResponse.json({error:error.message},{status:500});return NextResponse.json({ok:true})}catch(error){return NextResponse.json({error:error.message},{status:500})}}

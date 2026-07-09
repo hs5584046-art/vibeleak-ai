@@ -1,2 +1,1 @@
-export const metadata={ title: 'Terms of Use' };
-export default function Page(){return <main className="wrap policy"><div className="card"><h1>Terms of Use</h1><p>VibeLeak provides entertainment and self-reflection experiences. Results are generated from user-provided answers using rule-based scoring and should not be treated as professional, scientific, psychological, financial, astrological, or guaranteed predictions.</p><p><a href="/">Back to VibeLeak</a></p></div></main>}
+export default function Page(){return <main className='wrap'><div className='card'><h1>Terms</h1><p className='muted'>VibeLeak is entertainment and self-reflection. Results are rule-based and not guaranteed predictions.</p><a href='/'>Back</a></div></main>}
