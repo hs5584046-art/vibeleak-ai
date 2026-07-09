@@ -1,12 +1,10 @@
-# VibeLeak AI Advanced Engine
+# VibeLeak AI Premium Delivery Flow
 
-Upgraded prediction/report engine:
-- Normalized scoring
-- Confidence level
-- Contradiction detection
-- Dimension scores
-- Strongest positive and risk signals
-- Better narrative result
-- Paid report preview tied to tool-specific result
+Added:
+- Buyer email/WhatsApp collection
+- UTR / transaction ID submission
+- Premium report reveal after UTR submission
+- Copy premium report
+- Print / Save PDF
 
-Still entertainment/self-reflection, not guaranteed real-world prediction.
+Note: UPI payment is manual. Verify UTR manually before treating payment as confirmed.

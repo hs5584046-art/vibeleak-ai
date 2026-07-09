@@ -311,27 +311,112 @@ const initialAnswers = {};
 TOOLS.forEach(t => t.questions.forEach(q => initialAnswers[q.key] = ''));
 
 export default function Home(){
-  const [tool,setTool]=useState(TOOLS[0]); const [answers,setAnswers]=useState(initialAnswers); const [step,setStep]=useState(0); const [result,setResult]=useState(null); const [showPay,setShowPay]=useState(false); const [utr,setUtr]=useState('');
+  const [tool,setTool]=useState(TOOLS[0]); const [answers,setAnswers]=useState(initialAnswers); const [step,setStep]=useState(0); const [result,setResult]=useState(null); const [showPay,setShowPay]=useState(false); const [utr,setUtr]=useState(''); const [buyerContact,setBuyerContact]=useState(''); const [premiumUnlocked,setPremiumUnlocked]=useState(false);
   const current=tool.questions[step]; const progress=Math.round(((step+1)/tool.questions.length)*100);
   const upiLink=useMemo(()=>`upi://pay?pa=${encodeURIComponent(UPI_ID)}&pn=${encodeURIComponent('VibeLeak AI')}&am=${tool.price}&cu=INR&tn=${encodeURIComponent(tool.title+' report')}`,[tool]);
-  function chooseTool(t){setTool(t);setStep(0);setResult(null);setShowPay(false)}
+  function chooseTool(t){setTool(t);setStep(0);setResult(null);setShowPay(false);setPremiumUnlocked(false);setUtr('');setBuyerContact('')}
   function update(k,v){setAnswers({...answers,[k]:v})}
   function next(){ if(current.type!=='textarea' && !answers[current.key]) return alert('Answer this first'); if(step<tool.questions.length-1) setStep(step+1); else setResult(calculate(tool,answers))}
   function back(){ if(step>0) setStep(step-1)}
   async function copyUPI(){await navigator.clipboard.writeText(UPI_ID); alert('UPI copied')}
+  function submitPaymentReference(){
+    if(!buyerContact.trim()) return alert('Enter email or WhatsApp number');
+    if(!utr.trim() || utr.trim().length < 6) return alert('Enter valid UTR / transaction ID');
+    setPremiumUnlocked(true);
+    setShowPay(false);
+  }
+  function copyPremiumReport(){
+    if(!result) return;
+    const text = [
+      `VibeLeak AI Premium Report`,
+      `Test: ${tool.title}`,
+      `Score: ${result.score}%`,
+      `Result: ${result.label}`,
+      `Confidence: ${result.confidence}%`,
+      ``,
+      `Core Interpretation:`,
+      result.narrative,
+      ``,
+      `What shaped the result:`,
+      ...result.factors.map(x => `- ${x}`),
+      ``,
+      `Premium Insights:`,
+      ...result.locked.map(x => `- ${x}`),
+      ``,
+      `Buyer contact: ${buyerContact}`,
+      `UTR: ${utr}`
+    ].join('\n');
+    navigator.clipboard.writeText(text);
+    alert('Premium report copied');
+  }
   return <main className="wrap">
     <nav className="nav"><div className="brand">VibeLeak <span>AI</span></div><div className="navlinks"><a href="#tests">Tests</a><a href="#faq">FAQ</a><a className="btn secondary" href="#quiz">Start</a></div></nav>
     <section className="hero"><div><span className="pill">Your answers reveal more than you think ✨</span><h1>Love, personality and future score tests that feel personal.</h1><p className="muted">Choose a test, answer focused questions, get a calculated score, and unlock deeper insights with UPI.</p><div className="actions"><a href="#tests" className="btn">Explore Tests</a><a href="#quiz" className="btn secondary">Start Now</a></div></div><div className="card hero-card"><h2>Built to feel specific.</h2><p className="muted">The new engine uses normalized scoring, confidence level, contradiction detection and factor-based explanations.</p><div className="metric-row"><div className="mini"><strong>5</strong><span>Tests</span></div><div className="mini"><strong>₹29+</strong><span>Unlocks</span></div><div className="mini"><strong>UPI</strong><span>Fast pay</span></div></div></div></section>
     <section className="section" id="tests"><span className="pill">Choose your test</span><h2>What do you want to discover?</h2><div className="tools">{TOOLS.map(t=><div key={t.id} className={'tool '+(tool.id===t.id?'active':'')} onClick={()=>chooseTool(t)}><div className="emoji">{t.emoji}</div><h3>{t.title}</h3><p className="small">{t.hook}</p><div className="price">₹{t.price}</div></div>)}</div></section>
     <section className="section quiz-shell" id="quiz">
       <div className="card"><span className="pill">{tool.emoji} {tool.title}</span><h2>{tool.hook}</h2><p className="muted">{tool.seo}</p><div className="progress"><div className="bar" style={{width:`${progress}%`}}/></div><p className="small">Question {step+1} of {tool.questions.length}</p><Question q={current} value={answers[current.key]} onChange={v=>update(current.key,v)}/><div className="actions"><button className="btn secondary" onClick={back}>Back</button><button className="btn" onClick={next}>{step===tool.questions.length-1?'Reveal My Score':'Next'}</button></div></div>
-      <div className="card">{!result?<><h2>Your result will appear here.</h2><p className="muted">Answer the focused questions to calculate your score.</p></>:<><div className="result-score">{result.score}%</div><h2>{result.label}</h2><p className="muted">{result.narrative}</p><div className="metric-row"><div className="mini"><strong>{result.confidence}%</strong><span>Confidence</span></div>{Object.entries(result.dimensions).slice(0,2).map(([k,v])=><div className="mini" key={k}><strong>{v}%</strong><span>{k}</span></div>)}</div><h3>What shaped your result?</h3>{result.factors.map((f,i)=><div className="factor" key={i}>{f}</div>)}<div className="share-card">{tool.emoji} I scored {result.score}% on {tool.title}. Can you beat this?</div><h3>Your score is only the surface</h3><div className="locked"><ul>{result.locked.map((x,i)=><li key={i}>{x}</li>)}</ul></div><div className="paybox"><h3>Reveal what your score isn’t telling you — ₹{tool.price}</h3><p className="small">Mobile: UPI app may open. Desktop: copy UPI ID.</p><div className="upi">UPI: {UPI_ID}</div><div className="actions"><a href={upiLink} className="btn">Unlock with UPI</a><button className="btn secondary" onClick={copyUPI}>Copy UPI</button><button className="btn secondary" onClick={()=>setShowPay(!showPay)}>Verify Payment</button></div>{showPay&&<div className="actions"><input placeholder="Enter UTR / Transaction ID" value={utr} onChange={e=>setUtr(e.target.value)}/><button className="btn secondary" onClick={()=>alert('Payment reference received. Verify manually.')}>Submit</button></div>}<div className="qr">QR placeholder<br/>Copy UPI active</div></div></>}</div>
+      <div className="card">{!result?<><h2>Your result will appear here.</h2><p className="muted">Answer the focused questions to calculate your score.</p></>:<><div className="result-score">{result.score}%</div><h2>{result.label}</h2><p className="muted">{result.narrative}</p><div className="metric-row"><div className="mini"><strong>{result.confidence}%</strong><span>Confidence</span></div>{Object.entries(result.dimensions).slice(0,2).map(([k,v])=><div className="mini" key={k}><strong>{v}%</strong><span>{k}</span></div>)}</div><h3>What shaped your result?</h3>{result.factors.map((f,i)=><div className="factor" key={i}>{f}</div>)}<div className="share-card">{tool.emoji} I scored {result.score}% on {tool.title}. Can you beat this?</div><h3>Your score is only the surface</h3><div className="locked"><ul>{result.locked.map((x,i)=><li key={i}>{x}</li>)}</ul></div><div className="paybox"><h3>Reveal what your score isn’t telling you — ₹{tool.price}</h3><p className="small">Mobile: UPI app may open. Desktop: copy UPI ID.</p><div className="upi">UPI: {UPI_ID}</div><div className="actions"><a href={upiLink} className="btn">Unlock with UPI</a><button className="btn secondary" onClick={copyUPI}>Copy UPI</button><button className="btn secondary" onClick={()=>setShowPay(!showPay)}>Verify Payment</button></div>{showPay&&<div className="verify-form">
+  <input placeholder="Email or WhatsApp for report delivery" value={buyerContact} onChange={e=>setBuyerContact(e.target.value)}/>
+  <input placeholder="Enter UTR / Transaction ID" value={utr} onChange={e=>setUtr(e.target.value)}/>
+  <button className="btn secondary" onClick={submitPaymentReference}>Submit Payment Reference</button>
+  <p className="small">Soft-launch mode: report unlocks after UTR submission. Verify payment manually before treating it as confirmed.</p>
+</div>}
+<div className="qr">QR placeholder<br/>Copy UPI active</div>
+{premiumUnlocked && <PremiumReport result={result} tool={tool} answers={answers} copyPremiumReport={copyPremiumReport}/>}
+</div></>}</div>
     </section>
     <section className="section grid3"><Info title="Normalized Scoring" text="Raw answer points are converted into a calibrated 1–99 score to avoid fake inflated results."/><Info title="Contradiction Detection" text="Mixed signals are detected and shown in the result explanation."/><Info title="Confidence Level" text="The engine rates how reliable the result is based on answer completeness and detail quality."/></section>
     <section className="section" id="faq"><span className="pill">FAQ</span><h2>Questions people ask</h2><div className="faq"><details><summary>Is this real prediction?</summary><p className="muted">It is an entertainment and self-reflection tool. Scores are calculated from your answers with rule-based logic, confidence and contradiction checks, but are not guaranteed predictions.</p></details><details><summary>Why does it feel personal?</summary><p className="muted">Because each test uses different questions, weighted factors, dimensions, mixed-signal checks and answer-detail signals.</p></details><details><summary>Why pay?</summary><p className="muted">Free result shows the score and main factors. Paid unlock reveals deeper analysis, message ideas, and personalized next steps.</p></details></div></section>
     <footer className="footer"><span>© VibeLeak AI</span><a href="/terms">Terms</a><a href="/privacy">Privacy</a><a href="/refunds">Refunds</a></footer>
   </main>
 }
+
+
+function PremiumReport({result, tool, answers, copyPremiumReport}){
+  const actions = buildPremiumActions(tool.id, result.score, answers);
+  return <div className="premium-report">
+    <span className="pill">Premium report unlocked</span>
+    <h3>Your deeper analysis</h3>
+    <div className="report-line"><strong>Core reading:</strong><br/>{result.narrative}</div>
+    <div className="report-line"><strong>Strongest signal:</strong><br/>{result.factors?.[0]}</div>
+    <div className="report-line"><strong>Biggest caution:</strong><br/>{result.factors?.[1]}</div>
+    <h3>Personal next steps</h3>
+    {actions.map((x,i)=><div className="report-line" key={i}>{x}</div>)}
+    <h3>Unlocked insights</h3>
+    <ul>{result.locked.map((x,i)=><li key={i}>{x}</li>)}</ul>
+    <div className="report-actions">
+      <button className="btn" onClick={copyPremiumReport}>Copy Premium Report</button>
+      <button className="btn secondary" onClick={()=>window.print()}>Print / Save PDF</button>
+    </div>
+  </div>
+}
+
+function buildPremiumActions(id, score, a){
+  if(id==='ex'){
+    if(score>=75) return ['Do not rush emotionally. Send one calm, low-pressure message instead of a long explanation.', 'Avoid blaming or reopening old fights. The positive signal is contact/access, but the risk is emotional over-pursuit.', 'Wait for their response quality before sending a second message.'];
+    if(score>=55) return ['Use soft contact only if access is open. If blocked or ignored, do not chase.', 'The mixed score means one signal is alive but another is resisting the comeback.', 'Focus on dignity and timing more than convincing.'];
+    return ['Do not initiate immediately. The current signal suggests distance or resistance.', 'Work on closure and self-control before attempting contact.', 'If they come back, let them create the first clear opening.'];
+  }
+  if(id==='crush'){
+    if(score>=75) return ['You can increase warmth gradually. Use a natural opener connected to shared interest.', 'Watch whether they also initiate after you create space.', 'Do not over-confess; build momentum first.'];
+    if(score>=55) return ['The signal is not dead, but timing matters. Keep interaction light.', 'Improve comfort and consistency before making a direct move.', 'Look for response quality, not just replies.'];
+    return ['Do not over-invest yet. Attraction signal looks uncertain.', 'Create one low-pressure interaction and observe effort.', 'If replies stay dry, step back.'];
+  }
+  if(id==='toxic'){
+    if(score>=75) return ['Your strongest work is emotional regulation before reaction.', 'Reduce control/checking behavior first because that changes how people experience you.', 'Repair quickly: acknowledge, apologize, and change the pattern.'];
+    if(score>=55) return ['You are not beyond repair, but one pattern is noticeable.', 'Focus on communication before escalation.', 'Ask one trusted person what pattern they see repeating.'];
+    return ['Your pattern looks relatively stable. Maintain accountability.', 'Do not ignore small triggers; they build over time.', 'Keep communication clear and direct.'];
+  }
+  if(id==='rare'){
+    if(score>=75) return ['Your originality is the strongest part of your identity. Lean into it.', 'Avoid diluting yourself to fit common expectations.', 'Use your rare mix as a personal brand advantage.'];
+    if(score>=55) return ['You have a distinct mix, but it needs sharper expression.', 'Choose one area where you want to be visibly different.', 'Confidence will make the rarity more noticeable.'];
+    return ['Your profile is relatable more than rare right now.', 'Build distinctiveness through interests, skills and personal style.', 'Originality can be developed intentionally.'];
+  }
+  if(score>=75) return ['Your trajectory is strong. Protect discipline and avoid lifestyle inflation.', 'Double down on skill growth and investing consistency.', 'Track money weekly, not emotionally.'];
+  if(score>=55) return ['You have potential, but consistency is the swing factor.', 'Fix the weakest habit first: debt, spending, or discipline.', 'Create a 30-day money rule and follow it strictly.'];
+  return ['Your current habits need correction before growth compounds.', 'Start with emergency fund and spending control.', 'Do not chase big wins before fixing consistency.'];
+}
+
 
 function Question({q,value,onChange}){
   if(q.type==='text') return <><div className="q-title">{q.label}</div><input autoFocus value={value||''} onChange={e=>onChange(e.target.value)} placeholder={q.label}/></>
