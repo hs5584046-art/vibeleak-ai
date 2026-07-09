@@ -4,197 +4,205 @@ import { useMemo, useState } from 'react';
 const UPI_ID = 'hrj107-3@okhdfcbank';
 
 const TOOLS = [
-  { id:'ex', title:'Ex Comeback Predictor', emoji:'💔', price:49, hook:'Will they come back?' },
-  { id:'crush', title:'Crush Compatibility', emoji:'💘', price:79, hook:'Are they actually into you?' },
-  { id:'toxic', title:'Toxicity Score', emoji:'☠️', price:29, hook:'How intense are your patterns?' },
-  { id:'rare', title:'How Rare Are You?', emoji:'🦄', price:39, hook:'How uncommon is your personality mix?' },
-  { id:'future', title:'Future Rich or Broke?', emoji:'💸', price:49, hook:'What do your habits predict?' }
+  {
+    id:'ex', slug:'ex-comeback-predictor', title:'Ex Comeback Predictor', emoji:'💔', price:49,
+    hook:'Find whether the door is still emotionally open.',
+    seo:'Calculated ex comeback score based on contact, breakup reason, block status and effort signals.',
+    questions:[
+      q('name','text','Your name / nickname'),
+      q('other','text','Ex name / nickname'),
+      q('relationshipLength','choice','How long was the relationship?',[['under3','Under 3 months'],['three12','3–12 months'],['over1','1+ year'],['over3','3+ years']]),
+      q('breakupInitiator','choice','Who ended it?',[['you','I ended it'],['them','They ended it'],['mutual','Mutual']]),
+      q('breakupReason','choice','Main breakup reason?',[['misunderstanding','Misunderstanding'],['distance','Distance/timing'],['family','Family pressure'],['fighting','Too much fighting'],['trust','Trust issue'],['cheating','Cheating']]),
+      q('lastContact','choice','When was the last contact?',[['today','Recently'],['week','This week'],['month','This month'],['long','Long time ago']]),
+      q('blockStatus','choice','Current block/status?',[['none','No block'],['muted','Ignored/muted'],['blocked','Blocked']]),
+      q('postBreakupContact','choice','Post-breakup contact?',[['often','Often'],['sometimes','Sometimes'],['never','Never']]),
+      q('newPartner','choice','Do they have someone new?',[['no','No'],['maybe','Maybe'],['yes','Yes']]),
+      q('attachment','scale','Your attachment level'),
+      q('effortFromThem','scale','Effort from their side'),
+      q('details','textarea','Add situation details')
+    ]
+  },
+  {
+    id:'crush', slug:'crush-compatibility-test', title:'Crush Compatibility', emoji:'💘', price:79,
+    hook:'Check attraction signals, timing and comfort.',
+    seo:'Crush compatibility test using communication quality, initiation, comfort, respect and flirting signals.',
+    questions:[
+      q('name','text','Your name'),
+      q('other','text','Crush name / nickname'),
+      q('talkFrequency','choice','How often do you talk?',[['daily','Daily'],['weekly','Weekly'],['rare','Rarely'],['none','Almost never']]),
+      q('whoInitiates','choice','Who usually starts conversation?',[['they','They do'],['both','Both'],['you','Mostly me']]),
+      q('replyQuality','choice','Reply quality?',[['fast','Fast and excited'],['warm','Warm'],['late','Late but okay'],['dry','Dry']]),
+      q('timeTogether','choice','Do you spend time together?',[['often','Often'],['sometimes','Sometimes'],['never','Never']]),
+      q('flirting','scale','Flirting signal'),
+      q('sharedInterests','scale','Shared interests'),
+      q('emotionalComfort','scale','Emotional comfort'),
+      q('respect','scale','Respect level'),
+      q('timing','choice','Timing feels...', [['right','Right'],['slow','Need slow approach'],['bad','Bad timing']]),
+      q('details','textarea','Add situation details')
+    ]
+  },
+  {
+    id:'toxic', slug:'toxicity-score-test', title:'Toxicity Score', emoji:'☠️', price:29,
+    hook:'Understand the intense patterns people may notice.',
+    seo:'Toxicity score test based on jealousy, ghosting, anger, accountability and communication patterns.',
+    questions:[
+      q('name','text','Your name / nickname'),
+      q('jealousy','scale','Jealousy level'),
+      q('ghosting','scale','Ghosting tendency'),
+      q('manipulation','scale','Mind-game tendency'),
+      q('anger','scale','Anger intensity'),
+      q('revenge','scale','Revenge tendency'),
+      q('possessive','scale','Possessiveness'),
+      q('apologizes','scale','How often do you apologize?'),
+      q('accountability','scale','Accountability'),
+      q('communication','scale','Clear communication'),
+      q('details','textarea','Add situation details')
+    ]
+  },
+  {
+    id:'rare', slug:'how-rare-are-you', title:'How Rare Are You?', emoji:'🦄', price:39,
+    hook:'Discover how unusual your personality mix is.',
+    seo:'Rarity score test based on independence, originality, ambition, confidence and lifestyle signals.',
+    questions:[
+      q('name','text','Your name / nickname'),
+      q('city','text','City'),
+      q('independence','scale','Independence'),
+      q('riskTaking','scale','Risk-taking'),
+      q('unusualInterests','scale','Unusual interests'),
+      q('socialEnergy','scale','Social energy'),
+      q('travel','scale','Travel/exposure'),
+      q('ambition','scale','Ambition'),
+      q('discipline','scale','Discipline'),
+      q('originality','scale','Originality'),
+      q('confidence','scale','Confidence'),
+      q('details','textarea','What makes you different?')
+    ]
+  },
+  {
+    id:'future', slug:'future-rich-or-broke', title:'Future Rich or Broke?', emoji:'💸', price:49,
+    hook:'Analyze what your current habits suggest.',
+    seo:'Future rich or broke calculator based on savings, investing, skill growth, career clarity and spending control.',
+    questions:[
+      q('name','text','Your name / nickname'),
+      q('incomeHabit','scale','Income-building habit'),
+      q('savings','scale','Savings habit'),
+      q('debt','scale','Debt pressure'),
+      q('investing','scale','Investing habit'),
+      q('skillGrowth','scale','Skill growth'),
+      q('careerClarity','scale','Career clarity'),
+      q('spendingControl','scale','Spending control'),
+      q('emergencyFund','scale','Emergency fund'),
+      q('consistency','scale','Consistency'),
+      q('discipline','scale','Discipline'),
+      q('details','textarea','Your career/money situation')
+    ]
+  }
 ];
 
-const INIT = {
-  name:'', other:'', age:'', city:'', details:'',
-  vibe:'',
-  relationshipLength:'', breakupInitiator:'', breakupReason:'', lastContact:'', blockStatus:'', postBreakupContact:'', newPartner:'', attachment:'', effortFromThem:'',
-  talkFrequency:'', whoInitiates:'', replyQuality:'', timeTogether:'', flirting:'', sharedInterests:'', emotionalComfort:'', respect:'', timing:'',
-  jealousy:'', ghosting:'', manipulation:'', anger:'', revenge:'', possessive:'', apologizes:'', accountability:'', communication:'',
-  independence:'', riskTaking:'', unusualInterests:'', socialEnergy:'', travel:'', ambition:'', discipline:'', originality:'', confidence:'',
-  incomeHabit:'', savings:'', debt:'', investing:'', skillGrowth:'', careerClarity:'', spendingControl:'', emergencyFund:'', consistency:''
-};
+function q(key,type,label,options=[]){return {key,type,label,options}}
 
-function n(v){return Number(v||0)}
+const initialAnswers = {};
+TOOLS.forEach(t => t.questions.forEach(q => initialAnswers[q.key] = ''));
+
+function val(x){return Number(x||0)}
 function clamp(x){return Math.max(1,Math.min(99,Math.round(x)))}
 
-function calculate(id,f){
-  if(id==='ex') return calcEx(f);
-  if(id==='crush') return calcCrush(f);
-  if(id==='toxic') return calcToxic(f);
-  if(id==='rare') return calcRare(f);
-  return calcFuture(f);
+function calculate(tool, a){
+  let s = 0, factors = [];
+  if(tool.id==='ex'){
+    s=40;
+    s += add({under3:2,three12:6,over1:10,over3:12}[a.relationshipLength], factors, 'Relationship length');
+    s += add({you:-4,them:6,mutual:10}[a.breakupInitiator], factors, 'Who ended it');
+    s += add({misunderstanding:16,distance:9,family:5,fighting:-7,trust:-14,cheating:-20}[a.breakupReason], factors, 'Breakup reason');
+    s += add({today:18,week:13,month:5,long:-9}[a.lastContact], factors, 'Last contact');
+    s += add({none:12,muted:2,blocked:-18}[a.blockStatus], factors, 'Block status');
+    s += add({often:13,sometimes:6,never:-7}[a.postBreakupContact], factors, 'Post-breakup contact');
+    s += add({no:8,maybe:-3,yes:-18}[a.newPartner], factors, 'New partner signal');
+    s += add(val(a.attachment)*3, factors, 'Your attachment');
+    s += add(val(a.effortFromThem)*4, factors, 'Effort from their side');
+  } else if(tool.id==='crush'){
+    s=38;
+    s += add({daily:16,weekly:9,rare:-4,none:-12}[a.talkFrequency], factors, 'Talk frequency');
+    s += add({they:14,both:10,you:-4}[a.whoInitiates], factors, 'Who initiates');
+    s += add({fast:12,warm:9,late:-5,dry:-8}[a.replyQuality], factors, 'Reply quality');
+    s += add({often:11,sometimes:6,never:-7}[a.timeTogether], factors, 'Time together');
+    s += add(val(a.flirting)*5, factors, 'Flirting signal');
+    s += add(val(a.sharedInterests)*4, factors, 'Shared interests');
+    s += add(val(a.emotionalComfort)*4, factors, 'Emotional comfort');
+    s += add(val(a.respect)*3, factors, 'Respect');
+    s += add({right:8,slow:2,bad:-10}[a.timing], factors, 'Timing');
+  } else if(tool.id==='toxic'){
+    s=18;
+    s += add(val(a.jealousy)*7, factors, 'Jealousy');
+    s += add(val(a.ghosting)*6, factors, 'Ghosting');
+    s += add(val(a.manipulation)*8, factors, 'Mind games');
+    s += add(val(a.anger)*6, factors, 'Anger');
+    s += add(val(a.revenge)*7, factors, 'Revenge tendency');
+    s += add(val(a.possessive)*6, factors, 'Possessiveness');
+    s -= add(val(a.apologizes)*4, factors, 'Apology reduces score');
+    s -= add(val(a.accountability)*5, factors, 'Accountability reduces score');
+    s -= add(val(a.communication)*4, factors, 'Communication reduces score');
+  } else if(tool.id==='rare'){
+    s=35;
+    s += add(val(a.independence)*5, factors, 'Independence');
+    s += add(val(a.riskTaking)*3, factors, 'Risk-taking');
+    s += add(val(a.unusualInterests)*6, factors, 'Unusual interests');
+    s += add(val(a.socialEnergy)*2, factors, 'Social energy');
+    s += add(val(a.travel)*3, factors, 'Travel/exposure');
+    s += add(val(a.ambition)*4, factors, 'Ambition');
+    s += add(val(a.discipline)*3, factors, 'Discipline');
+    s += add(val(a.originality)*6, factors, 'Originality');
+    s += add(val(a.confidence)*3, factors, 'Confidence');
+  } else {
+    s=25;
+    s += add(val(a.incomeHabit)*4, factors, 'Income-building habit');
+    s += add(val(a.savings)*6, factors, 'Savings');
+    s -= add(val(a.debt)*5, factors, 'Debt pressure');
+    s += add(val(a.investing)*6, factors, 'Investing');
+    s += add(val(a.skillGrowth)*6, factors, 'Skill growth');
+    s += add(val(a.careerClarity)*5, factors, 'Career clarity');
+    s += add(val(a.spendingControl)*5, factors, 'Spending control');
+    s += add(val(a.emergencyFund)*4, factors, 'Emergency fund');
+    s += add(val(a.consistency)*5, factors, 'Consistency');
+    s += add(val(a.discipline)*5, factors, 'Discipline');
+  }
+  const score = clamp(s);
+  return {score, label: label(tool.id, score), factors: factors.slice(0,5), locked: premium(tool.id)};
 }
 
-function calcEx(f){
-  let s=40;
-  s += {under3:2, three12:6, over1:10, over3:12}[f.relationshipLength]||0;
-  s += {you:-4, them:6, mutual:10}[f.breakupInitiator]||0;
-  s += {misunderstanding:16, distance:9, family:5, fighting:-7, trust:-14, cheating:-20}[f.breakupReason]||0;
-  s += {today:18, week:13, month:5, long:-9}[f.lastContact]||0;
-  s += {none:12, muted:2, blocked:-18}[f.blockStatus]||0;
-  s += {often:13, sometimes:6, never:-7}[f.postBreakupContact]||0;
-  s += {no:8, maybe:-3, yes:-18}[f.newPartner]||0;
-  s += n(f.attachment)*3 + n(f.effortFromThem)*4;
-  return pack('ex',clamp(s),[
-    `Last contact signal: ${label(f.lastContact)}`,
-    `Block status impact: ${label(f.blockStatus)}`,
-    `Breakup reason impact: ${label(f.breakupReason)}`,
-    `Attachment and effort from their side affected the final comeback score.`
-  ]);
-}
-
-function calcCrush(f){
-  let s=38;
-  s += {daily:16, weekly:9, rare:-4, none:-12}[f.talkFrequency]||0;
-  s += {they:14, both:10, you:-4}[f.whoInitiates]||0;
-  s += {fast:12, warm:9, dry:-8, late:-5}[f.replyQuality]||0;
-  s += {often:11, sometimes:6, never:-7}[f.timeTogether]||0;
-  s += n(f.flirting)*5+n(f.sharedInterests)*4+n(f.emotionalComfort)*4+n(f.respect)*3;
-  s += {right:8, slow:2, bad:-10}[f.timing]||0;
-  return pack('crush',clamp(s),[
-    `Communication frequency: ${label(f.talkFrequency)}`,
-    `Initiation pattern: ${label(f.whoInitiates)}`,
-    `Reply quality: ${label(f.replyQuality)}`,
-    `Flirting, comfort, shared interests and respect shaped the compatibility score.`
-  ]);
-}
-
-function calcToxic(f){
-  let s=18;
-  s += n(f.jealousy)*7+n(f.ghosting)*6+n(f.manipulation)*8+n(f.anger)*6+n(f.revenge)*7+n(f.possessive)*6;
-  s -= n(f.apologizes)*4+n(f.accountability)*5+n(f.communication)*4;
-  return pack('toxic',clamp(s),[
-    `Jealousy, ghosting, manipulation, anger and possessiveness increased the score.`,
-    `Apology, accountability and communication reduced the score.`,
-    `Higher score means stronger intense patterns, not a medical label.`,
-    `Your answers suggest which habits people may notice first.`
-  ]);
-}
-
-function calcRare(f){
-  let s=35;
-  s += n(f.independence)*5+n(f.riskTaking)*3+n(f.unusualInterests)*6+n(f.socialEnergy)*2+n(f.travel)*3+n(f.ambition)*4+n(f.discipline)*3+n(f.originality)*6+n(f.confidence)*3;
-  return pack('rare',clamp(s),[
-    `Originality and unusual interests strongly increased rarity.`,
-    `Independence, ambition and confidence shaped the uniqueness score.`,
-    `Social energy and travel added lifestyle rarity.`,
-    `This score reflects your answer pattern, not population census data.`
-  ]);
-}
-
-function calcFuture(f){
-  let s=25;
-  s += n(f.incomeHabit)*4+n(f.savings)*6+n(f.investing)*6+n(f.skillGrowth)*6+n(f.careerClarity)*5+n(f.spendingControl)*5+n(f.emergencyFund)*4+n(f.consistency)*5+n(f.discipline)*5;
-  s -= n(f.debt)*5;
-  return pack('future',clamp(s),[
-    `Savings, investing and skill growth are the strongest positive factors.`,
-    `Debt pressure and weak spending control reduce the score.`,
-    `Career clarity and consistency improved future stability.`,
-    `This is a habits-based potential score, not financial advice.`
-  ]);
-}
-
-function pack(id,score,factors){
-  return {score,label:getLabel(id,score),factors,paid:paidBullets(id,score)}
-}
-
-function getLabel(id,score){
-  const tiers = score>=75?'high':score>=55?'mid':'low';
-  const map={
-    ex:{high:'High comeback signal',mid:'Mixed signal, not fully over',low:'Low comeback signal'},
-    crush:{high:'Strong attraction pattern',mid:'Potential, but timing matters',low:'Interest looks uncertain'},
-    toxic:{high:'Intense pattern detected',mid:'Manageable but noticeable',low:'Mostly stable energy'},
-    rare:{high:'Rare personality mix',mid:'Distinct but relatable',low:'Common but charming'},
-    future:{high:'Strong future potential',mid:'Can win with discipline',low:'Habits need correction'}
-  };
-  return map[id][tiers];
-}
-
-function paidBullets(id,score){
-  const data={
-    ex:['Whether to text or stay silent','Best message style for your situation','What is hurting comeback chances','7-day emotional strategy'],
-    crush:['Confession timing','How to avoid looking desperate','Green flags and red flags','Best conversation opener'],
-    toxic:['Your strongest pattern','How people may experience you','What to fix first','Personal roast-style insight'],
-    rare:['Rarity breakdown','Dating rarity','Friend-circle role','Shareable card text'],
-    future:['Money personality','Rich/broke risk factors','Career habit prediction','3 changes to improve future score']
-  };
-  return data[id];
-}
-
-function label(v){return v ? v.replaceAll('_',' ') : 'not selected'}
-
-const OPTIONS = {
-  scale:[1,2,3,4,5],
-  vibe:[['emotional','❤️ Emotional'],['overthinking','🧠 Overthinking'],['chill','😎 Chill'],['main','✨ Main character'],['confused','😵 Confused']]
-};
+function add(v,factors,name){const x=Number(v||0); if(x!==0) factors.push(`${name}: ${x>0?'+':''}${x}`); return x}
+function label(id,s){const high=s>=75, mid=s>=55; const m={ex:['High comeback signal','Mixed signal, not fully over','Low comeback signal'],crush:['Strong attraction pattern','Potential, but timing matters','Interest looks uncertain'],toxic:['Intense pattern detected','Manageable but noticeable','Mostly stable energy'],rare:['Rare personality mix','Distinct but relatable','Common but charming'],future:['Strong future potential','Can win with discipline','Habits need correction']};return high?m[id][0]:mid?m[id][1]:m[id][2]}
+function premium(id){return {ex:['Whether to text or stay silent','Best message style','What hurts comeback chances','7-day emotional strategy'],crush:['Confession timing','Best opener','Green and red flags','Attraction signal breakdown'],toxic:['Your strongest pattern','What people may feel around you','Brutal roast-style insight','What to fix first'],rare:['Rarity breakdown','Dating rarity','Friend-circle role','Shareable card text'],future:['Money personality','Rich/broke risk factors','Career habit prediction','3 changes to improve future score']}[id]}
 
 export default function Home(){
-  const [selected,setSelected]=useState(TOOLS[0]);
-  const [form,setForm]=useState(INIT);
-  const [result,setResult]=useState(null);
-  const [showPay,setShowPay]=useState(false);
-  const [utr,setUtr]=useState('');
-  const [paid,setPaid]=useState(false);
-  const upiLink=useMemo(()=>`upi://pay?pa=${encodeURIComponent(UPI_ID)}&pn=${encodeURIComponent('VibeLeak AI')}&am=${selected.price}&cu=INR&tn=${encodeURIComponent(selected.title+' report')}`,[selected]);
-
-  function update(k,v){setForm({...form,[k]:v})}
-  function changeTool(t){setSelected(t);setResult(null);setShowPay(false);setPaid(false)}
-  function generate(){ if(!form.name)return alert('Naam daalo pehle'); setResult(calculate(selected.id,form)); setShowPay(false); setPaid(false) }
-  async function copyUPI(){await navigator.clipboard.writeText(UPI_ID); alert('UPI copied: '+UPI_ID)}
-  function submitUTR(){ if(!utr.trim()) return alert('UTR / transaction ID daalo'); setPaid(true) }
-
+  const [tool,setTool]=useState(TOOLS[0]); const [answers,setAnswers]=useState(initialAnswers); const [step,setStep]=useState(0); const [result,setResult]=useState(null); const [showPay,setShowPay]=useState(false); const [utr,setUtr]=useState('');
+  const current=tool.questions[step]; const progress=Math.round(((step+1)/tool.questions.length)*100);
+  const upiLink=useMemo(()=>`upi://pay?pa=${encodeURIComponent(UPI_ID)}&pn=${encodeURIComponent('VibeLeak AI')}&am=${tool.price}&cu=INR&tn=${encodeURIComponent(tool.title+' report')}`,[tool]);
+  function chooseTool(t){setTool(t);setStep(0);setResult(null);setShowPay(false)}
+  function update(k,v){setAnswers({...answers,[k]:v})}
+  function next(){ if(current.type!=='textarea' && !answers[current.key]) return alert('Answer this first'); if(step<tool.questions.length-1) setStep(step+1); else setResult(calculate(tool,answers))}
+  function back(){ if(step>0) setStep(step-1)}
+  async function copyUPI(){await navigator.clipboard.writeText(UPI_ID); alert('UPI copied')}
   return <main className="wrap">
-    <nav className="nav"><div className="brand">VibeLeak <span>AI</span></div><a className="btn btn2" href="#tools">Start Test</a></nav>
-
-    <section className="hero">
-      <div><span className="pill">Your answers reveal more than you think ✨</span><h1>Choose what you want to discover.</h1><p className="muted">Every test has its own questions, scoring logic and premium insight path.</p><div className="note">Scores are calculated from your answer patterns. This is an entertainment and self-reflection experience.</div></div>
-      <div className="card"><h2>Separate tests. Separate logic.</h2><p className="muted">Ex comeback, crush compatibility, toxicity, rarity and future potential all use different inputs and factor weights.</p></div>
+    <nav className="nav"><div className="brand">VibeLeak <span>AI</span></div><div className="navlinks"><a href="#tests">Tests</a><a href="#faq">FAQ</a><a className="btn secondary" href="#quiz">Start</a></div></nav>
+    <section className="hero"><div><span className="pill">Your answers reveal more than you think ✨</span><h1>Love, personality and future score tests that feel personal.</h1><p className="muted">Choose a test, answer focused questions, get a calculated score, and unlock deeper insights with UPI.</p><div className="actions"><a href="#tests" className="btn">Explore Tests</a><a href="#quiz" className="btn secondary">Start Now</a></div></div><div className="card hero-card"><h2>Not one generic form.</h2><p className="muted">Every tool uses its own questions and scoring logic.</p><div className="metric-row"><div className="mini"><strong>5</strong><span>Tests</span></div><div className="mini"><strong>₹29+</strong><span>Unlocks</span></div><div className="mini"><strong>UPI</strong><span>Fast pay</span></div></div></div></section>
+    <section className="section" id="tests"><span className="pill">Choose your test</span><h2>What do you want to discover?</h2><div className="tools">{TOOLS.map(t=><div key={t.id} className={'tool '+(tool.id===t.id?'active':'')} onClick={()=>chooseTool(t)}><div className="emoji">{t.emoji}</div><h3>{t.title}</h3><p className="small">{t.hook}</p><div className="price">₹{t.price}</div></div>)}</div></section>
+    <section className="section quiz-shell" id="quiz">
+      <div className="card"><span className="pill">{tool.emoji} {tool.title}</span><h2>{tool.hook}</h2><p className="muted">{tool.seo}</p><div className="progress"><div className="bar" style={{width:`${progress}%`}}/></div><p className="small">Question {step+1} of {tool.questions.length}</p><Question q={current} value={answers[current.key]} onChange={v=>update(current.key,v)}/><div className="actions"><button className="btn secondary" onClick={back}>Back</button><button className="btn" onClick={next}>{step===tool.questions.length-1?'Reveal My Score':'Next'}</button></div></div>
+      <div className="card">{!result?<><h2>Your result will appear here.</h2><p className="muted">Answer the focused questions to calculate your score.</p></>:<><div className="result-score">{result.score}%</div><h2>{result.label}</h2><p className="muted">Calculated from your selected answers for {tool.title}.</p><h3>What shaped your result?</h3>{result.factors.map((f,i)=><div className="factor" key={i}>{f}</div>)}<div className="share-card">{tool.emoji} I scored {result.score}% on {tool.title}. Can you beat this?</div><h3>Your score is only the surface</h3><div className="locked"><ul>{result.locked.map((x,i)=><li key={i}>{x}</li>)}</ul></div><div className="paybox"><h3>Reveal what your score isn’t telling you — ₹{tool.price}</h3><p className="small">Mobile: UPI app may open. Desktop: copy UPI ID.</p><div className="upi">UPI: {UPI_ID}</div><div className="actions"><a href={upiLink} className="btn">Unlock with UPI</a><button className="btn secondary" onClick={copyUPI}>Copy UPI</button><button className="btn secondary" onClick={()=>setShowPay(!showPay)}>Verify Payment</button></div>{showPay&&<div className="actions"><input placeholder="Enter UTR / Transaction ID" value={utr} onChange={e=>setUtr(e.target.value)}/><button className="btn secondary" onClick={()=>alert('Payment reference received. Verify manually.')}>Submit</button></div>}<div className="qr">QR placeholder<br/>Copy UPI active</div></div></>}</div>
     </section>
-
-    <section id="tools"><h2>What Do You Want to Discover?</h2><div className="tools">{TOOLS.map(t=><div key={t.id} className={'tool '+(selected.id===t.id?'active':'')} onClick={()=>changeTool(t)}><div style={{fontSize:34}}>{t.emoji}</div><h3>{t.title}</h3><p className="small">{t.hook}</p><div className="price">₹{t.price}</div></div>)}</div></section>
-
-    <section className="hero" style={{minHeight:'auto'}}>
-      <div className="card">
-        <span className="pill">{selected.emoji} {selected.title}</span><h2>The More Honest You Are, The More Personal Your Result</h2>
-        <BaseFields form={form} update={update}/>
-        <ToolQuestions id={selected.id} form={form} update={update}/>
-        <textarea placeholder="Add situation details..." value={form.details} onChange={e=>update('details',e.target.value)} />
-        <div className="actions"><button className="btn" onClick={generate}>Reveal My Free Score</button></div>
-      </div>
-
-      <div className="result card">
-        {!result?<p className="muted">Your personalized result is waiting.</p>:<>
-          <div className="score">{result.score}%</div><h2>{result.label}</h2><p className="muted">Calculated from the relevant factors for this specific test.</p>
-          <h3>What Shaped Your Result?</h3>{result.factors.map((x,i)=><div className="factor" key={i}>{x}</div>)}
-          <div className="share">{selected.emoji} {form.name} got {result.score}% on {selected.title}. Think someone can beat this?</div>
-          <h3>Your Score Is Only the Surface</h3><div className="blur"><ul className="list">{result.paid.map((x,i)=><li key={i}>{x}</li>)}</ul></div>
-          <div className="paybox"><h3>Reveal What Your Score Isn’t Telling You — ₹{selected.price}</h3><p className="small">Mobile par UPI app open ho sakta hai. Desktop par UPI ID copy karo.</p><div className="upi">UPI: {UPI_ID}</div><div className="actions"><a className="btn" href={upiLink}>Unlock with UPI</a><button className="btn btn2" onClick={copyUPI}>Copy Payment ID</button><button className="btn btn2" onClick={()=>setShowPay(!showPay)}>Verify My Payment</button></div><div className="qr-placeholder">QR placeholder<br/>Copy UPI active</div>{showPay&&<div className="pay-form"><input placeholder="Enter UTR / Transaction ID" value={utr} onChange={e=>setUtr(e.target.value)} /><button className="btn btn2" onClick={submitUTR}>Submit & Reveal My Analysis</button></div>}{paid&&<div className="note">Payment reference received. Full analysis can be delivered after verification.</div>}</div>
-        </>}
-      </div>
-    </section>
-
-    <footer className="footer">VibeLeak provides entertainment and self-reflection experiences based on user-provided answers. <a href="/terms">Terms</a></footer>
+    <section className="section grid3"><Info title="Separate Questionnaires" text="Each test asks different questions, so the experience feels more personal."/><Info title="Calculated Scoring" text="Scores come from weighted answer factors, not pure random numbers."/><Info title="Shareable Results" text="Free score cards create curiosity and help organic sharing."/></section>
+    <section className="section" id="faq"><span className="pill">FAQ</span><h2>Questions people ask</h2><div className="faq"><details><summary>Is this real prediction?</summary><p className="muted">It is an entertainment and self-reflection tool. Scores are calculated from your answers but are not guaranteed predictions.</p></details><details><summary>How do payments work?</summary><p className="muted">India launch uses UPI manual payment. Later you can connect gateway payments.</p></details><details><summary>Why pay?</summary><p className="muted">Free result shows the score. Paid unlock reveals deeper factors, message ideas, and personalized next steps.</p></details></div></section>
+    <footer className="footer"><span>© VibeLeak AI</span><a href="/terms">Terms</a><a href="/privacy">Privacy</a><a href="/refunds">Refunds</a></footer>
   </main>
 }
 
-function BaseFields({form,update}){
-  return <><div className="formgrid"><input placeholder="Your name / nickname" value={form.name} onChange={e=>update('name',e.target.value)}/><input placeholder="Age" value={form.age} onChange={e=>update('age',e.target.value)}/><input placeholder="City" value={form.city} onChange={e=>update('city',e.target.value)}/><input placeholder="Other person name, optional" value={form.other} onChange={e=>update('other',e.target.value)}/></div><p className="small">Choose your vibe</p><div className="vibe-grid">{OPTIONS.vibe.map(([v,l])=><button type="button" key={v} className={'vibe-btn '+(form.vibe===v?'active':'')} onClick={()=>update('vibe',v)}>{l}</button>)}</div></>
+function Question({q,value,onChange}){
+  if(q.type==='text') return <><div className="q-title">{q.label}</div><input autoFocus value={value||''} onChange={e=>onChange(e.target.value)} placeholder={q.label}/></>
+  if(q.type==='textarea') return <><div className="q-title">{q.label}</div><textarea value={value||''} onChange={e=>onChange(e.target.value)} placeholder={q.label}/></>
+  if(q.type==='scale') return <><div className="q-title">{q.label}</div><div className="answer-grid">{[1,2,3,4,5].map(n=><button className={'answer '+(String(value)===String(n)?'active':'')} key={n} onClick={()=>onChange(String(n))}>{n}/5</button>)}</div></>
+  return <><div className="q-title">{q.label}</div><div className="answer-grid">{q.options.map(([v,l])=><button className={'answer '+(value===v?'active':'')} key={v} onClick={()=>onChange(v)}>{l}</button>)}</div></>
 }
 
-function Select({label,value,onChange,children}){return <select value={value} onChange={e=>onChange(e.target.value)}><option value="">{label}</option>{children}</select>}
-function Scale({label,value,onChange}){return <Select label={label} value={value} onChange={onChange}>{OPTIONS.scale.map(x=><option key={x} value={x}>{x}/5</option>)}</Select>}
-
-function ToolQuestions({id,form,update}){
-  if(id==='ex') return <div className="formgrid"><Select label="Relationship length" value={form.relationshipLength} onChange={v=>update('relationshipLength',v)}><option value="under3">Under 3 months</option><option value="three12">3–12 months</option><option value="over1">1+ year</option><option value="over3">3+ years</option></Select><Select label="Who ended it?" value={form.breakupInitiator} onChange={v=>update('breakupInitiator',v)}><option value="you">I ended it</option><option value="them">They ended it</option><option value="mutual">Mutual</option></Select><Select label="Breakup reason" value={form.breakupReason} onChange={v=>update('breakupReason',v)}><option value="misunderstanding">Misunderstanding</option><option value="distance">Distance/timing</option><option value="family">Family pressure</option><option value="fighting">Too much fighting</option><option value="trust">Trust issue</option><option value="cheating">Cheating</option></Select><Select label="Last contact" value={form.lastContact} onChange={v=>update('lastContact',v)}><option value="today">Recently</option><option value="week">This week</option><option value="month">This month</option><option value="long">Long time ago</option></Select><Select label="Block status" value={form.blockStatus} onChange={v=>update('blockStatus',v)}><option value="none">No block</option><option value="muted">Ignored/muted</option><option value="blocked">Blocked</option></Select><Select label="Post-breakup contact" value={form.postBreakupContact} onChange={v=>update('postBreakupContact',v)}><option value="often">Often</option><option value="sometimes">Sometimes</option><option value="never">Never</option></Select><Select label="New partner?" value={form.newPartner} onChange={v=>update('newPartner',v)}><option value="no">No</option><option value="maybe">Maybe</option><option value="yes">Yes</option></Select><Scale label="Your attachment" value={form.attachment} onChange={v=>update('attachment',v)}/><Scale label="Effort from them" value={form.effortFromThem} onChange={v=>update('effortFromThem',v)}/></div>;
-  if(id==='crush') return <div className="formgrid"><Select label="Talk frequency" value={form.talkFrequency} onChange={v=>update('talkFrequency',v)}><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="rare">Rarely</option><option value="none">Almost never</option></Select><Select label="Who initiates?" value={form.whoInitiates} onChange={v=>update('whoInitiates',v)}><option value="they">They do</option><option value="both">Both</option><option value="you">Mostly me</option></Select><Select label="Reply quality" value={form.replyQuality} onChange={v=>update('replyQuality',v)}><option value="fast">Fast and excited</option><option value="warm">Warm</option><option value="late">Late but okay</option><option value="dry">Dry</option></Select><Select label="Time spent together" value={form.timeTogether} onChange={v=>update('timeTogether',v)}><option value="often">Often</option><option value="sometimes">Sometimes</option><option value="never">Never</option></Select><Scale label="Flirting signal" value={form.flirting} onChange={v=>update('flirting',v)}/><Scale label="Shared interests" value={form.sharedInterests} onChange={v=>update('sharedInterests',v)}/><Scale label="Emotional comfort" value={form.emotionalComfort} onChange={v=>update('emotionalComfort',v)}/><Scale label="Respect" value={form.respect} onChange={v=>update('respect',v)}/><Select label="Timing" value={form.timing} onChange={v=>update('timing',v)}><option value="right">Feels right</option><option value="slow">Need slow approach</option><option value="bad">Bad timing</option></Select></div>;
-  if(id==='toxic') return <div className="formgrid"><Scale label="Jealousy" value={form.jealousy} onChange={v=>update('jealousy',v)}/><Scale label="Ghosting" value={form.ghosting} onChange={v=>update('ghosting',v)}/><Scale label="Manipulation" value={form.manipulation} onChange={v=>update('manipulation',v)}/><Scale label="Anger" value={form.anger} onChange={v=>update('anger',v)}/><Scale label="Revenge tendency" value={form.revenge} onChange={v=>update('revenge',v)}/><Scale label="Possessiveness" value={form.possessive} onChange={v=>update('possessive',v)}/><Scale label="Apologizing" value={form.apologizes} onChange={v=>update('apologizes',v)}/><Scale label="Accountability" value={form.accountability} onChange={v=>update('accountability',v)}/><Scale label="Communication" value={form.communication} onChange={v=>update('communication',v)}/></div>;
-  if(id==='rare') return <div className="formgrid"><Scale label="Independence" value={form.independence} onChange={v=>update('independence',v)}/><Scale label="Risk-taking" value={form.riskTaking} onChange={v=>update('riskTaking',v)}/><Scale label="Unusual interests" value={form.unusualInterests} onChange={v=>update('unusualInterests',v)}/><Scale label="Social energy" value={form.socialEnergy} onChange={v=>update('socialEnergy',v)}/><Scale label="Travel/exposure" value={form.travel} onChange={v=>update('travel',v)}/><Scale label="Ambition" value={form.ambition} onChange={v=>update('ambition',v)}/><Scale label="Discipline" value={form.discipline} onChange={v=>update('discipline',v)}/><Scale label="Originality" value={form.originality} onChange={v=>update('originality',v)}/><Scale label="Confidence" value={form.confidence} onChange={v=>update('confidence',v)}/></div>;
-  return <div className="formgrid"><Scale label="Income habit" value={form.incomeHabit} onChange={v=>update('incomeHabit',v)}/><Scale label="Savings habit" value={form.savings} onChange={v=>update('savings',v)}/><Scale label="Debt pressure" value={form.debt} onChange={v=>update('debt',v)}/><Scale label="Investing habit" value={form.investing} onChange={v=>update('investing',v)}/><Scale label="Skill growth" value={form.skillGrowth} onChange={v=>update('skillGrowth',v)}/><Scale label="Career clarity" value={form.careerClarity} onChange={v=>update('careerClarity',v)}/><Scale label="Spending control" value={form.spendingControl} onChange={v=>update('spendingControl',v)}/><Scale label="Emergency fund" value={form.emergencyFund} onChange={v=>update('emergencyFund',v)}/><Scale label="Consistency" value={form.consistency} onChange={v=>update('consistency',v)}/><Scale label="Discipline" value={form.discipline} onChange={v=>update('discipline',v)}/></div>;
-}
+function Info({title,text}){return <div className="card"><h3>{title}</h3><p className="muted">{text}</p></div>}

@@ -1,10 +1,12 @@
-# VibeLeak AI - Separate Questionnaires
+# VibeLeak AI Pro Final
 
-Each tool now has separate questionnaire + separate weighted scoring:
-- Ex Comeback
-- Crush Compatibility
-- Toxicity Score
-- How Rare Are You
-- Future Rich or Broke
+Premium UI/UX rebuild with:
+- One-question-at-a-time flow
+- Separate questionnaires for all 5 tools
+- Weighted scoring logic
+- UPI payment flow
+- SEO landing pages
+- sitemap and robots
+- policy pages
 
 UPI ID: hrj107-3@okhdfcbank

@@ -1,0 +1,1 @@
+export default function sitemap(){const base='https://vibeleak.ai';return ['','/ex-comeback-predictor','/crush-compatibility-test','/toxicity-score-test','/how-rare-are-you','/future-rich-or-broke','/terms','/privacy','/refunds'].map(p=>({url:base+p,lastModified:new Date()}))}

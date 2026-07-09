@@ -1,0 +1,2 @@
+export const metadata={ title: 'Privacy Policy' };
+export default function Page(){return <main className="wrap policy"><div className="card"><h1>Privacy Policy</h1><p>We may collect answers you provide, UPI transaction references you submit, and basic usage information to operate the service. Do not submit highly sensitive information.</p><p><a href="/">Back to VibeLeak</a></p></div></main>}

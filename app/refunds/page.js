@@ -1,0 +1,2 @@
+export const metadata={ title: 'Refund Policy' };
+export default function Page(){return <main className="wrap policy"><div className="card"><h1>Refund Policy</h1><p>Digital reports are generally non-refundable after generation or delivery. Refund review may be considered for duplicate payments or technical failures.</p><p><a href="/">Back to VibeLeak</a></p></div></main>}
