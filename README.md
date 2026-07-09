@@ -1,13 +1,10 @@
-# VibeLeak AI
+# VibeLeak AI - Separate Questionnaires
 
-One website with 5 viral entertainment tools:
-- Ex Comeback Predictor ₹49
-- Kundli + Crush Compatibility ₹79
-- AI Roast / Toxicity Score ₹29
-- How Rare Are You ₹39
-- Future Rich or Broke ₹49
+Each tool now has separate questionnaire + separate weighted scoring:
+- Ex Comeback
+- Crush Compatibility
+- Toxicity Score
+- How Rare Are You
+- Future Rich or Broke
 
-UPI ID is set to: hrj107-3@okhdfcbank
-
-Deploy:
-Upload the contents to GitHub root and Vercel will deploy.
+UPI ID: hrj107-3@okhdfcbank
