@@ -1,0 +1,82 @@
+{
+  "pages": {
+    "/_not-found/page": [
+      "static/chunks/webpack-c8441f2d519541e3.js",
+      "static/chunks/fd9d1056-8a61572848a53694.js",
+      "static/chunks/117-986301f2b0eb33fb.js",
+      "static/chunks/main-app-191e0e46b29b919c.js",
+      "static/chunks/app/_not-found/page-3e21253a2c85e10f.js"
+    ],
+    "/layout": [
+      "static/chunks/webpack-c8441f2d519541e3.js",
+      "static/chunks/fd9d1056-8a61572848a53694.js",
+      "static/chunks/117-986301f2b0eb33fb.js",
+      "static/chunks/main-app-191e0e46b29b919c.js",
+      "static/css/ffea8fa626bc5251.css",
+      "static/chunks/app/layout-0f616987ac1be0f6.js"
+    ],
+    "/page": [
+      "static/chunks/webpack-c8441f2d519541e3.js",
+      "static/chunks/fd9d1056-8a61572848a53694.js",
+      "static/chunks/117-986301f2b0eb33fb.js",
+      "static/chunks/main-app-191e0e46b29b919c.js",
+      "static/chunks/app/page-aa11aafa084b970e.js"
+    ],
+    "/future-rich-or-broke/page": [
+      "static/chunks/webpack-c8441f2d519541e3.js",
+      "static/chunks/fd9d1056-8a61572848a53694.js",
+      "static/chunks/117-986301f2b0eb33fb.js",
+      "static/chunks/main-app-191e0e46b29b919c.js",
+      "static/chunks/app/future-rich-or-broke/page-f3c14d2dd0b4079c.js"
+    ],
+    "/crush-compatibility-test/page": [
+      "static/chunks/webpack-c8441f2d519541e3.js",
+      "static/chunks/fd9d1056-8a61572848a53694.js",
+      "static/chunks/117-986301f2b0eb33fb.js",
+      "static/chunks/main-app-191e0e46b29b919c.js",
+      "static/chunks/app/crush-compatibility-test/page-aefeec8346989723.js"
+    ],
+    "/how-rare-are-you/page": [
+      "static/chunks/webpack-c8441f2d519541e3.js",
+      "static/chunks/fd9d1056-8a61572848a53694.js",
+      "static/chunks/117-986301f2b0eb33fb.js",
+      "static/chunks/main-app-191e0e46b29b919c.js",
+      "static/chunks/app/how-rare-are-you/page-34f5d25e29216ec8.js"
+    ],
+    "/ex-comeback-predictor/page": [
+      "static/chunks/webpack-c8441f2d519541e3.js",
+      "static/chunks/fd9d1056-8a61572848a53694.js",
+      "static/chunks/117-986301f2b0eb33fb.js",
+      "static/chunks/main-app-191e0e46b29b919c.js",
+      "static/chunks/app/ex-comeback-predictor/page-5a82f20566eb854f.js"
+    ],
+    "/refunds/page": [
+      "static/chunks/webpack-c8441f2d519541e3.js",
+      "static/chunks/fd9d1056-8a61572848a53694.js",
+      "static/chunks/117-986301f2b0eb33fb.js",
+      "static/chunks/main-app-191e0e46b29b919c.js",
+      "static/chunks/app/refunds/page-b987aae8a33a2281.js"
+    ],
+    "/privacy/page": [
+      "static/chunks/webpack-c8441f2d519541e3.js",
+      "static/chunks/fd9d1056-8a61572848a53694.js",
+      "static/chunks/117-986301f2b0eb33fb.js",
+      "static/chunks/main-app-191e0e46b29b919c.js",
+      "static/chunks/app/privacy/page-58e29ee8f436fde0.js"
+    ],
+    "/toxicity-score-test/page": [
+      "static/chunks/webpack-c8441f2d519541e3.js",
+      "static/chunks/fd9d1056-8a61572848a53694.js",
+      "static/chunks/117-986301f2b0eb33fb.js",
+      "static/chunks/main-app-191e0e46b29b919c.js",
+      "static/chunks/app/toxicity-score-test/page-7a4e01627c73f3c1.js"
+    ],
+    "/terms/page": [
+      "static/chunks/webpack-c8441f2d519541e3.js",
+      "static/chunks/fd9d1056-8a61572848a53694.js",
+      "static/chunks/117-986301f2b0eb33fb.js",
+      "static/chunks/main-app-191e0e46b29b919c.js",
+      "static/chunks/app/terms/page-1b701e9eb1e8e682.js"
+    ]
+  }
+}
