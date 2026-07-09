@@ -1,0 +1,14 @@
+{
+  "/_not-found/page": "app/_not-found/page.js",
+  "/page": "app/page.js",
+  "/robots.txt/route": "app/robots.txt/route.js",
+  "/sitemap.xml/route": "app/sitemap.xml/route.js",
+  "/future-rich-or-broke/page": "app/future-rich-or-broke/page.js",
+  "/crush-compatibility-test/page": "app/crush-compatibility-test/page.js",
+  "/how-rare-are-you/page": "app/how-rare-are-you/page.js",
+  "/ex-comeback-predictor/page": "app/ex-comeback-predictor/page.js",
+  "/refunds/page": "app/refunds/page.js",
+  "/privacy/page": "app/privacy/page.js",
+  "/toxicity-score-test/page": "app/toxicity-score-test/page.js",
+  "/terms/page": "app/terms/page.js"
+}
