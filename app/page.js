@@ -196,9 +196,27 @@ export default function Home(){
           <input placeholder={selected.id==='ex'?'Ex name':'Crush / optional name'} value={form.other} onChange={e=>update('other',e.target.value)} />
           <input placeholder="Age" value={form.age} onChange={e=>update('age',e.target.value)} />
           <input placeholder="City" value={form.city} onChange={e=>update('city',e.target.value)} />
-          <select value={form.vibe} onChange={e=>update('vibe',e.target.value)}>
-            <option value="">Your vibe</option><option value="emotional">Emotional</option><option value="overthinking">Overthinking</option><option value="chill">Chill</option><option value="main">Main character</option><option value="confused">Confused</option>
-          </select>
+          <div style={{gridColumn:'1 / -1'}}>
+            <p className="small">Choose your vibe</p>
+            <div className="vibe-grid">
+              {[
+                ['emotional','❤️ Emotional'],
+                ['overthinking','🧠 Overthinking'],
+                ['chill','😎 Chill'],
+                ['main','✨ Main character'],
+                ['confused','😵 Confused']
+              ].map(([value,label]) => (
+                <button
+                  type="button"
+                  key={value}
+                  className={'vibe-btn '+(form.vibe===value?'active':'')}
+                  onClick={() => update('vibe', value)}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
           <select value={form.contact} onChange={e=>update('contact',e.target.value)}>
             <option value="">Last contact</option><option value="today">Today/recently</option><option value="week">This week</option><option value="month">This month</option><option value="long">Long time ago</option>
           </select>

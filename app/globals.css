@@ -13,3 +13,8 @@ input,select,textarea{width:100%;padding:13px;border-radius:13px;border:1px soli
 select option{background:#160721;color:#fff}
 .qr-placeholder{height:160px;width:190px;border-radius:18px;background:rgba(255,255,255,.08);border:1px dashed rgba(255,255,255,.35);display:grid;place-items:center;text-align:center;color:var(--muted);margin:14px 0}
 .pay-form{display:grid;gap:10px;margin-top:12px}
+
+.vibe-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:14px 0}
+.vibe-btn{border:1px solid var(--line);background:rgba(255,255,255,.07);color:var(--text);border-radius:14px;padding:12px 10px;font-weight:900;cursor:pointer;text-align:center}
+.vibe-btn.active{background:linear-gradient(135deg,var(--pink),var(--yellow));color:#15071b;border-color:transparent}
+@media(max-width:950px){.vibe-grid{grid-template-columns:1fr 1fr}}
