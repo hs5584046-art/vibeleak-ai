@@ -196,3 +196,15 @@ The production build skips Next.js's duplicate internal type pass because strict
 8. Submit `https://vibelytix.lol/sitemap.xml` in Google Search Console.
 9. Request indexing for the homepage and assessment pages.
 10. Verify every UPI payment independently before approval.
+
+## Vercel install fix (v5.0.1)
+
+This package contains a regenerated Vercel-safe dependency configuration:
+
+- Node.js pinned to `22.x`
+- npm pinned through `packageManager: npm@10.9.2`
+- public npm registry forced through `.npmrc`
+- deterministic `npm ci --no-audit --no-fund` in `vercel.json`
+- package-lock resolved URLs point to `https://registry.npmjs.org/`
+
+After pushing this version, redeploy in Vercel with **Use existing Build Cache disabled**. The previous cache may contain the failed dependency installation.
